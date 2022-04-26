@@ -1,5 +1,7 @@
 # %%
+import argparse
 import os
+import yaml
 
 import torch
 import wandb
@@ -8,21 +10,21 @@ from torch.optim import Adam
 from torchvision import datasets, transforms
 from torchvision.utils import make_grid
 from tqdm import tqdm
-
-from standard_autoencoder import AutoEncoder
+from classic_autoencoder import AutoEncoder
 
 # %%
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '--configFile', help="config yaml file name", default='config.yaml')
+args = parser.parse_args()
+print(args)
+print(args.configFile)
+with open(args.configFile, 'r', encoding='UTF8') as f:
+    configs = yaml.load(f, Loader=yaml.FullLoader)
+
 os.environ["WANDB_NOTEBOOK_NAME"] = "standard autoencoder"
-CONFIG = {
-    "num_epochs": 30,
-    "batch_size": 64,
-    "learning_rate": 0.005,
-    "hidden_dim1": 128,
-    "hidden_dim2": 64,
-    "latent_dim": 4
-}
 wandb.init(project="autoencoder", entity="minjunsz",
-           config=CONFIG, group="standard_autoencoder")
+           config=configs, group=configs["model_type"])
 DATA_DIR = "../data"
 device = torch.device('cuda') \
     if torch.cuda.is_available() else torch.device('cpu')
@@ -44,14 +46,17 @@ test_loader = torch.utils.data.DataLoader(
     shuffle=False
 )
 # %%
-first_img, _ = train_dataset[0]
-input_dim = first_img.flatten().size(0)
-model = AutoEncoder(
-    input_dim=input_dim,
-    hidden_dim1=wandb.config.hidden_dim1,
-    hidden_dim2=wandb.config.hidden_dim2,
-    latent_dim=wandb.config.latent_dim
-)
+if wandb.config["model_type"] == "classic-AE":
+    first_img, _ = train_dataset[0]
+    input_dim = first_img.flatten().size(0)
+
+    model = AutoEncoder(
+        input_dim=input_dim,
+        hidden_dim1=wandb.config.hidden_dim1,
+        hidden_dim2=wandb.config.hidden_dim2,
+        latent_dim=wandb.config.latent_dim
+    )
+
 model = model.to(device)
 optimizer = Adam(model.parameters(), lr=wandb.config.learning_rate)
 criterion = nn.MSELoss()
