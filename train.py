@@ -17,8 +17,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '--configFile', help="config yaml file name", default='config.yaml')
 args = parser.parse_args()
-print(args)
-print(args.configFile)
+print("Config File: ", args.configFile)
 with open(args.configFile, 'r', encoding='UTF8') as f:
     configs = yaml.load(f, Loader=yaml.FullLoader)
 
