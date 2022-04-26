@@ -26,6 +26,7 @@ wandb.init(project="autoencoder", entity="minjunsz",
 DATA_DIR = "../data"
 device = torch.device('cuda') \
     if torch.cuda.is_available() else torch.device('cpu')
+print("Learning on: ", device)
 # %%
 train_dataset = datasets.MNIST(
     root=DATA_DIR, train=True, transform=transforms.ToTensor(), download=True)
@@ -56,7 +57,7 @@ optimizer = Adam(model.parameters(), lr=wandb.config.learning_rate)
 criterion = nn.MSELoss()
 # %%
 sample_images, _ = next(iter(train_loader))
-sample_images = sample_images[:6]
+sample_images = (sample_images[:6]).to(device)
 
 # %%
 for epoch in tqdm(range(wandb.config.num_epochs), desc="train progress"):
