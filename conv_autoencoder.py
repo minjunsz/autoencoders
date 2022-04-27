@@ -7,18 +7,22 @@ import torch.nn.functional as F
 class ConvAE(nn.Module):
     """convolutional autoencoder with Conv2d, ConvTranspose2d"""
 
-    def __init__(self):
+    def __init__(self, latent_dim: int):
         """initialize autoencoder w/ two hidden layers
         encoder & decoder have symmetric architecture
         """
         super().__init__()
+        # 1*28*28 -> 3*24*24
         self.conv1 = nn.Conv2d(
             in_channels=1, out_channels=3, kernel_size=5)
         self.deconv1 = \
             nn.ConvTranspose2d(in_channels=3, out_channels=1, kernel_size=5)
+        # 3*24*24 -> 5*20*20
         self.conv2 = nn.Conv2d(in_channels=3, out_channels=5, kernel_size=5)
         self.deconv2 = \
             nn.ConvTranspose2d(in_channels=5, out_channels=3, kernel_size=5)
+        self.encode_FC = nn.Linear(5*20*20, latent_dim)
+        self.decode_FC = nn.Linear(latent_dim, 5*20*20)
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
         """encode process saves MaxPooling indicies at stack; self.indicies
@@ -33,6 +37,8 @@ class ConvAE(nn.Module):
         x = F.relu(x)
         x = self.conv2(x)
         x = F.relu(x)
+        x = x.flatten(start_dim=1)
+        x = self.encode_FC(x)
         return x
 
     def decode(self, x: torch.Tensor) -> torch.Tensor:
@@ -44,6 +50,8 @@ class ConvAE(nn.Module):
         Returns:
             torch.Tensor: recovered image
         """
+        x = self.decode_FC(x)
+        x = x.view((-1, 5, 20, 20))
         x = self.deconv2(x)
         x = F.relu(x)
         x = self.deconv1(x)
