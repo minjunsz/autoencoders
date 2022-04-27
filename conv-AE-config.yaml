@@ -1,5 +1,5 @@
 model_type: "conv-AE"
-num_epochs: 5
-batch_size: 64
+num_epochs: 30
+batch_size: 128
 learning_rate: 0.005
 latent_dim: 4
