@@ -11,15 +11,19 @@ from torchvision import datasets, transforms
 from torchvision.utils import make_grid
 from tqdm import tqdm
 from classic_autoencoder import AutoEncoder
+from conv_autoencoder import ConvAE
 
 # %%
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    '--configFile', help="config yaml file name", default='config.yaml')
-args = parser.parse_args()
-print("Config File: ", args.configFile)
-with open(args.configFile, 'r', encoding='UTF8') as f:
+# parser = argparse.ArgumentParser()
+# parser.add_argument(
+#     '--configFile', help="config yaml file name", default='config.yaml')
+# args = parser.parse_args()
+# print("Config File: ", args.configFile)
+# with open(args.configFile, 'r', encoding='UTF8') as f:
+#     configs = yaml.load(f, Loader=yaml.FullLoader)
+with open("conv-AE-config.yaml", 'r', encoding='UTF8') as f:
     configs = yaml.load(f, Loader=yaml.FullLoader)
+
 
 os.environ["WANDB_NOTEBOOK_NAME"] = "standard autoencoder"
 wandb.init(project="autoencoder", entity="minjunsz",
@@ -55,6 +59,8 @@ if wandb.config["model_type"] == "classic-AE":
         hidden_dim2=wandb.config.hidden_dim2,
         latent_dim=wandb.config.latent_dim
     )
+elif wandb.config["model_type"] == "conv-AE":
+    model = ConvAE()
 
 model = model.to(device)
 optimizer = Adam(model.parameters(), lr=wandb.config.learning_rate)
@@ -110,3 +116,5 @@ images = wandb.Image(
 wandb.log({
     "examples": images
 })
+
+# %%
