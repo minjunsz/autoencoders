@@ -6,10 +6,10 @@ Artifacts are tracked with W&B
 ### Implemented
 
 - Classic Autoencoder (w/ FC layers only)
+- Convolutional Autoencoders
 
 ### TODO
 
-- Convolutional Autoencoders
 - Dimensionality Reduction -> 2D & Plot
 - Variational Autoencoders
 - Disentangled VAE (beta-VAE)
