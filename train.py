@@ -60,7 +60,9 @@ if wandb.config["model_type"] == "classic-AE":
         latent_dim=wandb.config.latent_dim
     )
 elif wandb.config["model_type"] == "conv-AE":
-    model = ConvAE()
+    model = ConvAE(
+        latent_dim=wandb.config.latent_dim
+    )
 
 model = model.to(device)
 optimizer = Adam(model.parameters(), lr=wandb.config.learning_rate)
