@@ -3,8 +3,8 @@ import torch
 from torch import nn
 from torch.optim import Adam
 
-from autoencoders.utils import (get_device, get_mnist_dataloader,
-                                recover_image, train)
+from autoencoders.utils.template import (get_device, get_mnist_dataloader,
+                                         recover_image, train)
 from autoencoders.utils.cli_arguments import get_arguments
 from autoencoders.utils.model_factory import ModelFactory
 from autoencoders.utils.wandb_utils import init_wandb, log_images
@@ -14,11 +14,15 @@ from autoencoders.utils.wandb_utils import init_wandb, log_images
 
 def main():
     """main function"""
-    device = get_device()
-    dataloaders = get_mnist_dataloader()
-
     cli_args = get_arguments()
     config = init_wandb(cli_args.configFile)
+
+    device = get_device()
+    dataloaders = get_mnist_dataloader(config)
+
+    print("Config File: ", cli_args.configFile)
+    print("Target Model: ", config.model_type)
+    print("Device: ", device)
 
     model = ModelFactory.create_model(config)
     model = model.to(device)

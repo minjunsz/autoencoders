@@ -16,8 +16,8 @@ def init_wandb(config_path: str):
     with open(config_path, 'r', encoding='UTF8') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     # comment out these lines if you want to select specific config file in interactive mode
-    # with open("conv-AE-config.yaml", 'r', encoding='UTF8') as f:
-    #     configs = yaml.load(f, Loader=yaml.FullLoader)
+    # with open("configs/classic-AE-config.yaml", 'r', encoding='UTF8') as f:
+    #     config = yaml.load(f, Loader=yaml.FullLoader)
 
     wandb.init(project="autoencoder", entity="minjunsz",
                config=config, group=config["model_type"])

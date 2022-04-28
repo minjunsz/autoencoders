@@ -20,13 +20,15 @@ def get_device() -> torch.device:
     """
     device = torch.device('cuda') \
         if torch.cuda.is_available() else torch.device('cpu')
-    print("Device: ", device)
     return device
 
 
-def get_mnist_dataloader() -> Dict[str, DataLoader]:
+def get_mnist_dataloader(config: Dict) -> Dict[str, DataLoader]:
     """return a dictionary including MNIST dataloader (for both train/test)
     this can be done with torch.utils.data.datalo
+
+    Args:
+        config (nn.Module): wandb config
 
     Returns:
         _type_: Dict[str, DataLoader]
@@ -39,12 +41,12 @@ def get_mnist_dataloader() -> Dict[str, DataLoader]:
 
     train_loader = DataLoader(
         dataset=train_dataset,
-        batch_size=wandb.config.batch_size,
+        batch_size=config.batch_size,
         shuffle=True
     )
     test_loader = DataLoader(
         dataset=test_dataset,
-        batch_size=wandb.config.batch_size,
+        batch_size=config.batch_size,
         shuffle=False
     )
 
@@ -72,7 +74,7 @@ def recover_image(model: nn.Module, sample_images: torch.Tensor, device: torch.d
 
 
 def train(
-        model: nn.Module, optimizer: OptimizerOptimizer, criterion: _Loss, device: torch.device,
+        model: nn.Module, optimizer: Optimizer, criterion: _Loss, device: torch.device,
         config: Dict[str, Any], train_loader: DataLoader, val_loader: DataLoader,
         sample_images: Optional[torch.Tensor] = None, log_interval: int = 5) -> Dict[str, Any]:
     """train loop
