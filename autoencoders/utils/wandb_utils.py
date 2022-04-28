@@ -16,7 +16,7 @@ def init_wandb(config_path: str):
     with open(config_path, 'r', encoding='UTF8') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     # comment out these lines if you want to select specific config file in interactive mode
-    # with open("configs/classic-AE-config.yaml", 'r', encoding='UTF8') as f:
+    # with open("configs/standard-VAE-config.yaml", 'r', encoding='UTF8') as f:
     #     config = yaml.load(f, Loader=yaml.FullLoader)
 
     wandb.init(project="autoencoder", entity="minjunsz",
@@ -32,6 +32,9 @@ def log_images(sample_images: torch.Tensor, epoch1_output: torch.Tensor, final_o
         epoch1_output (torch.Tensor): recovered image after 1st train loop
         final_output (torch.Tensor): recovered image after whole train loop
     """
+    sample_images /= sample_images.mean()
+    epoch1_output /= epoch1_output.mean()
+    final_output /= final_output.mean()
     sample_output = torch.cat(list(
         map(make_grid,
             [sample_images, epoch1_output, final_output])),

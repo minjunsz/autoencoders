@@ -35,14 +35,21 @@ def get_mnist_dataloader(config: Dict) -> Dict[str, DataLoader]:
     """
     DATA_DIR = "../data"
     train_dataset = datasets.MNIST(
-        root=DATA_DIR, train=True, transform=transforms.ToTensor(), download=True)
+        root=DATA_DIR, train=True, download=True,
+        transform=transforms.Compose(
+            [transforms.ToTensor(),
+             transforms.Normalize((0.5), (0.5))]))
     test_dataset = datasets.MNIST(
-        root=DATA_DIR, train=False, transform=transforms.ToTensor())
+        root=DATA_DIR, train=False,
+        transform=transforms.Compose(
+            [transforms.ToTensor(),
+             transforms.Normalize((0.5), (0.5))]))
 
+    train_shuffle = False if config.debug else True
     train_loader = DataLoader(
         dataset=train_dataset,
         batch_size=config.batch_size,
-        shuffle=True
+        shuffle=train_shuffle
     )
     test_loader = DataLoader(
         dataset=test_dataset,
@@ -108,14 +115,17 @@ def train(
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-        epoch_loss /= len(train_loader)
+            if(config.debug):
+                break
+        if(not config.debug):
+            epoch_loss /= len(train_loader)
         wandb.log({"Train loss": epoch_loss})
 
         if epoch == 0 and sample_images is not None:
             epoch1_output = recover_image(
                 model=model, sample_images=sample_images, device=device)
 
-        if epoch % log_interval == (log_interval-1):
+        if epoch % log_interval == (log_interval-1) and not config.debug:
             val_loss = 0
             with torch.no_grad():
                 for (images, _) in val_loader:
