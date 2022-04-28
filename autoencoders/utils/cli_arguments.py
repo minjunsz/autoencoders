@@ -9,6 +9,6 @@ def get_arguments():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--configFile', help="config yaml file name", default='config.yaml')
-    args = parser.parse_args()
+        '--configFile', help="config yaml file name", default='configs/standard-VAE-config.yaml')
+    args = parser.parse_args(args=[])
     return args
