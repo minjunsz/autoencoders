@@ -1,0 +1,7 @@
+model_type: "classic-AE"
+num_epochs: 30
+batch_size: 64
+learning_rate: 0.005
+hidden_dim1: 128
+hidden_dim2: 64
+latent_dim: 4
