@@ -2,14 +2,13 @@
 from typing import Any, Dict, Optional
 
 import torch
+import wandb
 from torch import nn
 from torch.nn.modules.loss import _Loss
 from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from tqdm import tqdm
-
-import wandb
 
 
 def get_device() -> torch.device:
@@ -18,8 +17,7 @@ def get_device() -> torch.device:
     Returns:
         _type_: torch.device
     """
-    device = torch.device('cuda') \
-        if torch.cuda.is_available() else torch.device('cpu')
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     return device
 
 
@@ -35,35 +33,35 @@ def get_mnist_dataloader(config: Dict) -> Dict[str, DataLoader]:
     """
     DATA_DIR = "../data"
     train_dataset = datasets.MNIST(
-        root=DATA_DIR, train=True, download=True,
+        root=DATA_DIR,
+        train=True,
+        download=True,
         transform=transforms.Compose(
-            [transforms.ToTensor(),
-             transforms.Normalize((0.5), (0.5))]))
+            [transforms.ToTensor(), transforms.Normalize((0.5), (0.5))]
+        ),
+    )
     test_dataset = datasets.MNIST(
-        root=DATA_DIR, train=False,
+        root=DATA_DIR,
+        train=False,
         transform=transforms.Compose(
-            [transforms.ToTensor(),
-             transforms.Normalize((0.5), (0.5))]))
+            [transforms.ToTensor(), transforms.Normalize((0.5), (0.5))]
+        ),
+    )
 
-    train_shuffle = False if config.debug else True
+    train_shuffle = False if config["debug"] else True
     train_loader = DataLoader(
-        dataset=train_dataset,
-        batch_size=config.batch_size,
-        shuffle=train_shuffle
+        dataset=train_dataset, batch_size=config["batch_size"], shuffle=train_shuffle
     )
     test_loader = DataLoader(
-        dataset=test_dataset,
-        batch_size=config.batch_size,
-        shuffle=False
+        dataset=test_dataset, batch_size=config["batch_size"], shuffle=False
     )
 
-    return {
-        "train_loader": train_loader,
-        "test_loader": test_loader
-    }
+    return {"train_loader": train_loader, "test_loader": test_loader}
 
 
-def recover_image(model: nn.Module, sample_images: torch.Tensor, device: torch.device) -> torch.Tensor:
+def recover_image(
+    model: nn.Module, sample_images: torch.Tensor, device: torch.device
+) -> torch.Tensor:
     """recover given image(sample_images) by autoencoder 
 
     Args:
@@ -81,9 +79,16 @@ def recover_image(model: nn.Module, sample_images: torch.Tensor, device: torch.d
 
 
 def train(
-        model: nn.Module, optimizer: Optimizer, criterion: _Loss, device: torch.device,
-        config: Dict[str, Any], train_loader: DataLoader, val_loader: DataLoader,
-        sample_images: Optional[torch.Tensor] = None, log_interval: int = 5) -> Dict[str, Any]:
+    model: nn.Module,
+    optimizer: Optimizer,
+    criterion: _Loss,
+    device: torch.device,
+    config: Dict[str, Any],
+    train_loader: DataLoader,
+    val_loader: DataLoader,
+    sample_images: Optional[torch.Tensor] = None,
+    log_interval: int = 5,
+) -> Dict[str, Any]:
     """train loop
 
     Args:
@@ -103,29 +108,42 @@ def train(
             'initial_result' -> recovered 'sample imgs' after first train loop
     """
     for epoch in tqdm(range(config.num_epochs), desc="train progress"):
-        epoch_loss = 0.
+        epoch_loss, epoch_recon_loss, epoch_kld_loss = 0.0, 0.0, 0.0
         for batch_idx, (images, _) in enumerate(train_loader):
             images = images.to(device)
 
             model.train()
             output = model(images)
-            loss = criterion(output, images)
+            # loss = criterion(output, images)
+            loss_data = model.loss_function(*output, M_N=config["batch_size"])
+            loss = loss_data["loss"]
             epoch_loss += loss.item()
+            epoch_recon_loss += loss_data["Reconstruction_Loss"]
+            epoch_kld_loss += loss_data["KLD"]
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            if(config.debug):
+            if config.debug:
                 break
-        if(not config.debug):
+        if not config.debug:
             epoch_loss /= len(train_loader)
-        wandb.log({"Train loss": epoch_loss})
+            epoch_recon_loss /= len(train_loader)
+            epoch_kld_loss /= len(train_loader)
+        wandb.log(
+            {
+                "Train loss": epoch_loss,
+                "Reconstruction Loss": epoch_recon_loss,
+                "KL Divergence": epoch_kld_loss,
+            }
+        )
 
         if epoch == 0 and sample_images is not None:
             epoch1_output = recover_image(
-                model=model, sample_images=sample_images, device=device)
+                model=model, sample_images=sample_images, device=device
+            )
 
-        if epoch % log_interval == (log_interval-1) and not config.debug:
+        if epoch % log_interval == (log_interval - 1) and not config.debug:
             val_loss = 0
             with torch.no_grad():
                 for (images, _) in val_loader:
@@ -137,10 +155,7 @@ def train(
             val_loss /= len(val_loader)
             wandb.log({"Validation loss": val_loss})
 
-    return {
-        "model": model,
-        "initial_result": epoch1_output
-    }
+    return {"model": model, "initial_result": epoch1_output}
 
 
 # %%

@@ -29,6 +29,8 @@ class ModelFactory():
             model = AutoEncoder.from_config(config)
         elif model_type == "conv-AE":
             model = ConvAE.from_config(config)
+        elif model_type == "standard-VAE":
+            model = VAE.from_config(config)
         else:
             raise ValueError(
                 "Unknown model type; check 'model_type' in config file")

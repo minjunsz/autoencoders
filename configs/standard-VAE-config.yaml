@@ -1,0 +1,6 @@
+model_type: "standard-VAE"
+num_epochs: 1000
+batch_size: 64
+learning_rate: 0.001
+environment: "local"
+debug: False
