@@ -143,17 +143,17 @@ def train(
                 model=model, sample_images=sample_images, device=device
             )
 
-        if epoch % log_interval == (log_interval - 1) and not config.debug:
-            val_loss = 0
-            with torch.no_grad():
-                for (images, _) in val_loader:
-                    images = images.to(device)
-                    model.eval()
-                    output = model(images)
-                    loss = criterion(output, images)
-                    val_loss += loss.item()
-            val_loss /= len(val_loader)
-            wandb.log({"Validation loss": val_loss})
+        # if epoch % log_interval == (log_interval - 1) and not config.debug:
+        #     val_loss = 0
+        #     with torch.no_grad():
+        #         for (images, _) in val_loader:
+        #             images = images.to(device)
+        #             model.eval()
+        #             output = model(images)
+        #             loss = criterion(output, images)
+        #             val_loss += loss.item()
+        #     val_loss /= len(val_loader)
+        #     wandb.log({"Validation loss": val_loss})
 
     return {"model": model, "initial_result": epoch1_output}
 
