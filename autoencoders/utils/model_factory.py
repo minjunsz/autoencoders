@@ -1,8 +1,9 @@
 from typing import Dict
+
 from autoencoders.models import *
 
 
-class ModelFactory():
+class ModelFactory:
     """Factory class to initialize AutoEncoder models
 
     Raises:
@@ -11,6 +12,7 @@ class ModelFactory():
     Returns:
         _type_: _description_
     """
+
     @staticmethod
     def create_model(config: Dict):
         """factory method, which is responsible for initializing a model.
@@ -30,9 +32,8 @@ class ModelFactory():
         elif model_type == "conv-AE":
             model = ConvAE.from_config(config)
         elif model_type == "standard-VAE":
-            model = VAE.from_config(config)
+            model = VAE()
         else:
-            raise ValueError(
-                "Unknown model type; check 'model_type' in config file")
+            raise ValueError("Unknown model type; check 'model_type' in config file")
 
         return model
